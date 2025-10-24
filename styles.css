@@ -585,6 +585,113 @@ textarea:focus {
   background: transparent;
 }
 
+.knowledge-viewer {
+  gap: 24px;
+}
+
+.knowledge-viewer__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+
+.knowledge-viewer__definition p {
+  margin: 0;
+  color: var(--text-light);
+  white-space: pre-line;
+}
+
+.knowledge-viewer__options {
+  display: grid;
+  gap: 12px;
+}
+
+.viewer-option {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewer-option:hover {
+  border-color: var(--primary);
+  box-shadow: 0 12px 24px rgba(35, 52, 194, 0.12);
+}
+
+.viewer-option__badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+.viewer-option__label {
+  flex: 1;
+  text-align: left;
+}
+
+.knowledge-viewer__status {
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  background: var(--surface-alt);
+  color: var(--text);
+}
+
+.knowledge-viewer__status.is-info {
+  border: 1px solid rgba(59, 76, 226, 0.25);
+}
+
+.knowledge-viewer__status.is-final {
+  background: rgba(46, 204, 113, 0.12);
+  color: #1e824c;
+  border: 1px solid rgba(46, 204, 113, 0.35);
+}
+
+.knowledge-viewer__status.is-warning {
+  background: rgba(241, 196, 15, 0.15);
+  color: #946200;
+  border: 1px solid rgba(241, 196, 15, 0.35);
+}
+
+.knowledge-viewer__status.is-empty {
+  background: rgba(99, 110, 255, 0.08);
+  color: var(--primary-dark);
+  border: 1px dashed rgba(59, 76, 226, 0.35);
+}
+
+.knowledge-viewer .knowledge-actions .button {
+  min-width: 0;
+}
+
+.knowledge-viewer .knowledge-actions .button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.knowledge-viewer__path {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.knowledge-viewer__definition,
+.knowledge-viewer__path {
+  background: var(--surface-alt);
+}
+
 .toast {
   position: fixed;
   bottom: 24px;

@@ -29,9 +29,19 @@ const elements = {
   progressValue: document.getElementById('progressValue'),
   incompletePaths: document.getElementById('incompletePaths'),
   toast: document.getElementById('toast'),
+  knowledgeViewer: document.getElementById('knowledgeViewer'),
+  viewerKnowledgeTitle: document.getElementById('viewerKnowledgeTitle'),
+  viewerBreadcrumb: document.getElementById('viewerBreadcrumb'),
+  viewerDefinition: document.getElementById('viewerDefinition'),
+  viewerStepTitle: document.getElementById('viewerStepTitle'),
+  viewerStatus: document.getElementById('viewerStatus'),
+  viewerOptions: document.getElementById('viewerOptions'),
+  viewerReset: document.getElementById('viewerReset'),
+  viewerBack: document.getElementById('viewerBack'),
 };
 
 let state = loadState();
+let viewerPath = [];
 
 function createStep(label = 'Nouvelle étape', children = [], isFinal = false) {
   if (typeof children === 'boolean') {
@@ -242,6 +252,7 @@ function ensureSelectionConsistency() {
     state.selectedServiceId = null;
     state.selectedCategoryId = null;
     state.selectedKnowledgeId = null;
+    viewerPath = [];
     return;
   }
 
@@ -264,6 +275,7 @@ function ensureSelectionConsistency() {
   const category = getSelectedCategory();
   if (!category) {
     state.selectedKnowledgeId = null;
+    viewerPath = [];
     return;
   }
 
@@ -272,8 +284,33 @@ function ensureSelectionConsistency() {
   }
 }
 
+function ensureViewerPath() {
+  const knowledge = getSelectedKnowledge();
+  if (!knowledge) {
+    viewerPath = [];
+    return;
+  }
+
+  const validPath = [];
+  let steps = knowledge.steps || [];
+
+  for (const stepId of viewerPath) {
+    const next = steps.find((step) => step.id === stepId);
+    if (!next) break;
+    validPath.push(next.id);
+    steps = next.children || [];
+  }
+
+  viewerPath = validPath;
+}
+
+function resetViewerPath() {
+  viewerPath = [];
+}
+
 function render() {
   ensureSelectionConsistency();
+  ensureViewerPath();
   renderServices();
   renderCategories();
   renderKnowledges();
@@ -335,6 +372,7 @@ function renderServices() {
       state.selectedServiceId = service.id;
       state.selectedCategoryId = service.categories[0]?.id ?? null;
       state.selectedKnowledgeId = service.categories[0]?.knowledges[0]?.id ?? null;
+      resetViewerPath();
       render();
     });
 
@@ -378,6 +416,7 @@ function renderCategories() {
     item.addEventListener('click', () => {
       state.selectedCategoryId = category.id;
       state.selectedKnowledgeId = category.knowledges[0]?.id ?? null;
+      resetViewerPath();
       render();
     });
     list.appendChild(item);
@@ -419,6 +458,7 @@ function renderKnowledges() {
     }
     item.addEventListener('click', () => {
       state.selectedKnowledgeId = knowledge.id;
+      resetViewerPath();
       render();
     });
     list.appendChild(item);
@@ -433,20 +473,28 @@ function renderEditor() {
   if (!service || !category || !knowledge) {
     elements.emptyState.hidden = false;
     elements.knowledgeEditor.hidden = true;
+    elements.knowledgeViewer.hidden = true;
     return;
   }
 
   elements.emptyState.hidden = true;
-  elements.knowledgeEditor.hidden = false;
+  if (state.adminMode) {
+    elements.knowledgeEditor.hidden = false;
+    elements.knowledgeViewer.hidden = true;
 
-  elements.knowledgeTitle.value = knowledge.title || '';
-  elements.knowledgeDefinition.value = knowledge.definition || '';
-  elements.knowledgeBreadcrumb.textContent = `${service.name} › ${category.name} › ${
-    knowledge.title || 'Sans titre'
-  }`;
+    elements.knowledgeTitle.value = knowledge.title || '';
+    elements.knowledgeDefinition.value = knowledge.definition || '';
+    elements.knowledgeBreadcrumb.textContent = `${service.name} › ${category.name} › ${
+      knowledge.title || 'Sans titre'
+    }`;
 
-  renderTree(knowledge.steps || []);
-  updateProgress(knowledge.steps || []);
+    renderTree(knowledge.steps || []);
+    updateProgress(knowledge.steps || []);
+    return;
+  }
+
+  elements.knowledgeEditor.hidden = true;
+  renderViewer(service, category, knowledge);
 }
 
 function renderTree(steps) {
@@ -455,6 +503,116 @@ function renderTree(steps) {
     const node = createTreeNode(step);
     elements.stepTree.appendChild(node);
   });
+}
+
+function renderViewer(service, category, knowledge) {
+  elements.knowledgeViewer.hidden = false;
+  elements.viewerKnowledgeTitle.textContent = knowledge.title || 'Sans titre';
+  elements.viewerBreadcrumb.textContent = `${service.name} › ${category.name}`;
+  elements.viewerDefinition.textContent =
+    knowledge.definition?.trim() || 'Aucune définition renseignée pour le moment.';
+
+  const context = getViewerContext(knowledge);
+  const status = elements.viewerStatus;
+  const optionsContainer = elements.viewerOptions;
+  const hasPath = context.labels.length > 0;
+
+  elements.viewerStepTitle.textContent = hasPath
+    ? context.labels.join(' › ')
+    : 'Point de départ';
+  elements.viewerBack.disabled = viewerPath.length === 0;
+  elements.viewerReset.disabled = viewerPath.length === 0;
+
+  status.textContent = '';
+  status.className = 'knowledge-viewer__status';
+  optionsContainer.innerHTML = '';
+
+  if (!context.hasAnyStep) {
+    status.textContent =
+      "Aucun chemin n'est encore défini pour cette connaissance. Passez en mode admin pour le créer.";
+    status.classList.add('is-empty');
+    return;
+  }
+
+  if (context.reachedFinal) {
+    status.textContent = `Fin du parcours : ${context.current?.label || 'Étape finale'}.`;
+    status.classList.add('is-final');
+    return;
+  }
+
+  if (context.isIncompleteLeaf) {
+    status.textContent =
+      "Cette étape n'a pas encore d'options. Demandez à un administrateur de compléter le parcours.";
+    status.classList.add('is-warning');
+    return;
+  }
+
+  status.textContent = 'Sélectionnez une option pour continuer.';
+  status.classList.add('is-info');
+
+  context.options.forEach((option, index) => {
+    const letter = getOptionLetter(index);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'viewer-option';
+
+    const badge = document.createElement('span');
+    badge.className = 'viewer-option__badge';
+    badge.textContent = letter;
+
+    const label = document.createElement('span');
+    label.className = 'viewer-option__label';
+    label.textContent = option.label || `Option ${letter}`;
+
+    button.append(badge, label);
+    button.addEventListener('click', () => {
+      viewerPath = [...viewerPath, option.id];
+      render();
+    });
+
+    optionsContainer.appendChild(button);
+  });
+}
+
+function getViewerContext(knowledge) {
+  const labels = [];
+  let current = null;
+  let steps = knowledge.steps || [];
+
+  for (const stepId of viewerPath) {
+    const next = steps.find((step) => step.id === stepId);
+    if (!next) break;
+    current = next;
+    labels.push(next.label || 'Sans nom');
+    steps = next.children || [];
+  }
+
+  const options = current ? current.children || [] : knowledge.steps || [];
+  const hasAnyStep = (knowledge.steps || []).length > 0;
+  const reachedFinal = Boolean(current?.isFinal);
+  const isIncompleteLeaf = Boolean(current) && !reachedFinal && options.length === 0;
+
+  return {
+    current,
+    options,
+    labels,
+    hasAnyStep,
+    reachedFinal,
+    isIncompleteLeaf,
+  };
+}
+
+function getOptionLetter(index) {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let value = index;
+  let label = '';
+
+  while (value >= 0) {
+    label = alphabet[value % 26] + label;
+    value = Math.floor(value / 26) - 1;
+  }
+
+  return label;
 }
 
 function createTreeNode(step) {
@@ -553,6 +711,7 @@ function addService() {
   state.selectedServiceId = service.id;
   state.selectedCategoryId = null;
   state.selectedKnowledgeId = null;
+  resetViewerPath();
   render();
   showToast('Service ajouté');
 }
@@ -574,6 +733,7 @@ function addCategory() {
   service.categories.unshift(category);
   state.selectedCategoryId = category.id;
   state.selectedKnowledgeId = null;
+  resetViewerPath();
   render();
   showToast('Catégorie ajoutée');
 }
@@ -595,6 +755,7 @@ function addKnowledge() {
 
   category.knowledges.unshift(knowledge);
   state.selectedKnowledgeId = knowledge.id;
+  resetViewerPath();
   render();
   showToast('Connaissance créée');
 }
@@ -610,6 +771,7 @@ function deleteKnowledge() {
 
   category.knowledges = category.knowledges.filter((k) => k.id !== knowledge.id);
   state.selectedKnowledgeId = category.knowledges[0]?.id ?? null;
+  resetViewerPath();
   render();
   showToast('Connaissance supprimée');
 }
@@ -635,6 +797,7 @@ function addRootStep() {
   if (!label) return;
 
   knowledge.steps.push(createStep(label.trim()));
+  resetViewerPath();
   render();
   showToast('Nouvelle étape ajoutée');
 }
@@ -653,6 +816,7 @@ function addChildStep(stepId) {
   step.children = step.children || [];
   step.children.push(createStep(label.trim()));
   step.isFinal = false;
+  resetViewerPath();
   render();
   showToast('Embranchement ajouté');
 }
@@ -666,6 +830,7 @@ function deleteStep(stepId) {
   if (!confirmDelete) return;
 
   knowledge.steps = removeStepById(knowledge.steps, stepId);
+  resetViewerPath();
   render();
   showToast('Étape supprimée');
 }
@@ -681,6 +846,7 @@ function toggleStepFinal(stepId, isFinal) {
   if (isFinal) {
     step.children = [];
   }
+  resetViewerPath();
   render();
 }
 
@@ -791,6 +957,15 @@ elements.addKnowledge.addEventListener('click', addKnowledge);
 elements.deleteKnowledge.addEventListener('click', deleteKnowledge);
 elements.saveKnowledge.addEventListener('click', saveKnowledge);
 elements.addRootStep.addEventListener('click', addRootStep);
+elements.viewerReset.addEventListener('click', () => {
+  resetViewerPath();
+  render();
+});
+elements.viewerBack.addEventListener('click', () => {
+  if (viewerPath.length === 0) return;
+  viewerPath = viewerPath.slice(0, -1);
+  render();
+});
 
 function initialize() {
   setAdminMode(state.adminMode);
