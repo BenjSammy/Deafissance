@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Base de connaissances - Deafissance</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPkG6Cw+p1GSo8H4jqwU1V0t8mq1jhtnY7B8MO5NL5Fz26P4gFZb2zKg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <header class="sidebar__header">
+          <h1>Base de connaissances</h1>
+          <button class="icon-button" id="adminToggle" title="Mode administration">
+            <i class="fa-solid fa-user-gear"></i>
+          </button>
+        </header>
+
+        <section class="sidebar__section">
+          <div class="section-title">
+            <span>Catégories</span>
+            <button class="icon-button" id="addCategory" title="Ajouter une catégorie">
+              <i class="fa-solid fa-folder-plus"></i>
+            </button>
+          </div>
+          <ul class="category-list" id="categoryList"></ul>
+        </section>
+
+        <section class="sidebar__section">
+          <div class="section-title">
+            <span>Connaissances</span>
+            <button class="icon-button" id="addKnowledge" title="Ajouter une connaissance">
+              <i class="fa-solid fa-circle-plus"></i>
+            </button>
+          </div>
+          <ul class="knowledge-list" id="knowledgeList"></ul>
+        </section>
+      </aside>
+
+      <main class="workspace">
+        <div class="workspace__empty" id="emptyState">
+          <i class="fa-solid fa-lightbulb"></i>
+          <p>Choisissez ou créez une connaissance pour commencer.</p>
+        </div>
+
+        <section class="workspace__content" id="knowledgeEditor" hidden>
+          <header class="knowledge-header">
+            <div>
+              <input
+                type="text"
+                id="knowledgeTitle"
+                class="knowledge-header__title"
+                placeholder="Titre de la connaissance"
+              />
+              <div class="knowledge-breadcrumb" id="knowledgeBreadcrumb"></div>
+            </div>
+            <div class="knowledge-actions">
+              <button class="ghost-button" id="deleteKnowledge">
+                <i class="fa-solid fa-trash"></i> Supprimer
+              </button>
+              <button class="primary-button" id="saveKnowledge">
+                <i class="fa-solid fa-floppy-disk"></i> Enregistrer
+              </button>
+            </div>
+          </header>
+
+          <div class="knowledge-body">
+            <section class="panel">
+              <h2>Définition</h2>
+              <textarea
+                id="knowledgeDefinition"
+                placeholder="Décrivez la situation ou la problématique..."
+              ></textarea>
+            </section>
+
+            <section class="panel">
+              <header class="panel__header">
+                <h2>Chemin de résolution</h2>
+                <button class="icon-label" id="addRootStep">
+                  <i class="fa-solid fa-circle-plus"></i>
+                  Ajouter un point de départ
+                </button>
+              </header>
+
+              <div class="progress-card">
+                <div class="progress-card__row">
+                  <span class="progress-card__title">Progression des chemins</span>
+                  <span class="progress-card__value" id="progressValue">0%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-bar__fill" id="progressBar" style="width: 0%"></div>
+                </div>
+                <p class="progress-card__hint">
+                  Cochez <strong>Fin de chemin</strong> pour indiquer les réponses finales.
+                </p>
+              </div>
+
+              <ul class="tree" id="stepTree"></ul>
+
+              <div class="panel__footer" id="incompletePaths" hidden>
+                <h3>Chemins à compléter</h3>
+                <ul></ul>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <template id="treeNodeTemplate">
+      <li class="tree-node" data-id="">
+        <div class="tree-node__content">
+          <button class="tree-node__toggle" title="Replier / Déplier">
+            <i class="fa-solid fa-angle-down"></i>
+          </button>
+          <div class="tree-node__text" contenteditable="false"></div>
+          <div class="tree-node__actions">
+            <label class="checkbox">
+              <input type="checkbox" class="tree-node__final" />
+              <span>Fin de chemin</span>
+            </label>
+            <button class="icon-button" data-action="add" title="Ajouter un embranchement">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+            <button class="icon-button" data-action="delete" title="Supprimer">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        <ul class="tree-node__children"></ul>
+      </li>
+    </template>
+
+    <div class="toast" id="toast" hidden>
+      <i class="fa-solid fa-circle-check"></i>
+      <span></span>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
