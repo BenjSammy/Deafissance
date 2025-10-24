@@ -42,7 +42,7 @@
           <div>
             <h2>Services</h2>
             <p class="panel__subtitle">
-              Choisissez un service pour accéder à ses catégories et connaissances.
+              Sélectionnez un service pour accéder aux fiches connaissances associées.
             </p>
           </div>
           <button class="button button--primary" id="addService">
@@ -57,31 +57,16 @@
         <div class="column column--narrow">
           <section class="panel panel--list">
             <header class="panel__header">
-              <h2>Catégories</h2>
-              <button class="button button--ghost" id="addCategory">
-                <i class="fa-solid fa-folder-plus"></i>
-                Ajouter
-              </button>
-            </header>
-            <div class="panel__body">
-              <div class="panel__placeholder" id="categoryPlaceholder">
-                Sélectionnez un service pour consulter ses catégories.
+              <div>
+                <h2>Connaissances</h2>
+                <p class="panel__subtitle">
+                  Parcourez les fiches disponibles pour le service sélectionné.
+                </p>
               </div>
-              <ul class="simple-list" id="categoryList"></ul>
-            </div>
-          </section>
-
-          <section class="panel panel--list">
-            <header class="panel__header">
-              <h2>Connaissances</h2>
-              <button class="button button--ghost" id="addKnowledge">
-                <i class="fa-solid fa-circle-plus"></i>
-                Ajouter
-              </button>
             </header>
             <div class="panel__body">
               <div class="panel__placeholder" id="knowledgePlaceholder">
-                Choisissez une catégorie pour afficher ses connaissances.
+                Choisissez un service pour afficher ses connaissances.
               </div>
               <ul class="simple-list" id="knowledgeList"></ul>
             </div>
@@ -89,81 +74,10 @@
         </div>
 
         <div class="column column--wide">
-          <section class="panel editor-panel">
-            <div class="panel__body">
-              <div class="workspace__empty" id="emptyState">
-                <i class="fa-solid fa-lightbulb"></i>
-                <p>Sélectionnez ou créez une connaissance pour commencer.</p>
-              </div>
-
-              <div class="workspace__content" id="knowledgeEditor" hidden>
-                <header class="knowledge-header">
-                  <div>
-                    <input
-                      type="text"
-                      id="knowledgeTitle"
-                      class="knowledge-header__title"
-                      placeholder="Titre de la connaissance"
-                    />
-                    <div class="knowledge-breadcrumb" id="knowledgeBreadcrumb"></div>
-                  </div>
-                  <div class="knowledge-actions">
-                    <button class="button button--ghost" id="deleteKnowledge">
-                      <i class="fa-solid fa-trash"></i>
-                      Supprimer
-                    </button>
-                    <button class="button button--primary" id="saveKnowledge">
-                      <i class="fa-solid fa-floppy-disk"></i>
-                      Enregistrer
-                    </button>
-                  </div>
-                </header>
-
-                <div class="knowledge-body">
-                  <section class="panel panel--sub">
-                    <h3>Définition</h3>
-                    <textarea
-                      id="knowledgeDefinition"
-                      placeholder="Décrivez la situation, les prérequis ou les informations importantes..."
-                    ></textarea>
-                  </section>
-
-                  <section class="panel panel--sub">
-                    <header class="panel__header">
-                      <div>
-                        <h3>Chemin de résolution</h3>
-                        <p class="panel__subtitle">
-                          Organisez les étapes clés et marquez les issues finales.
-                        </p>
-                      </div>
-                      <button class="button button--ghost" id="addRootStep">
-                        <i class="fa-solid fa-circle-plus"></i>
-                        Point de départ
-                      </button>
-                    </header>
-
-                    <div class="progress-card">
-                      <div class="progress-card__row">
-                        <span class="progress-card__title">Progression des chemins</span>
-                        <span class="progress-card__value" id="progressValue">0%</span>
-                      </div>
-                      <div class="progress-bar">
-                        <div class="progress-bar__fill" id="progressBar"></div>
-                      </div>
-                      <p class="progress-card__hint">
-                        Cochez <strong>Fin de chemin</strong> pour indiquer les réponses finales.
-                      </p>
-                    </div>
-
-                    <ul class="tree" id="stepTree"></ul>
-
-                    <div class="panel__footer" id="incompletePaths" hidden>
-                      <h4>Chemins à compléter</h4>
-                      <ul></ul>
-                    </div>
-                  </section>
-                </div>
-              </div>
+          <section class="panel viewer-panel">
+            <div class="workspace__empty" id="emptyState">
+              <i class="fa-solid fa-lightbulb"></i>
+              <p>Sélectionnez une connaissance pour afficher son parcours.</p>
             </div>
 
             <div class="workspace__content knowledge-viewer" id="knowledgeViewer" hidden>
@@ -206,6 +120,126 @@
         </div>
       </div>
     </main>
+
+    <div class="admin-overlay" id="adminOverlay" hidden>
+      <div class="admin-overlay__backdrop" id="adminBackdrop"></div>
+      <div class="admin-overlay__panel">
+        <header class="admin-overlay__header">
+          <div>
+            <h2>Administration</h2>
+            <p>Gérez les services et organisez les connaissances.</p>
+          </div>
+          <button class="button button--ghost" id="closeAdmin">
+            <i class="fa-solid fa-xmark"></i>
+            Fermer
+          </button>
+        </header>
+        <div class="admin-overlay__body">
+          <aside class="admin-sidebar">
+            <section class="admin-section">
+              <header class="panel__header">
+                <h3>Services</h3>
+                <button class="button button--ghost" id="adminAddService">
+                  <i class="fa-solid fa-circle-plus"></i>
+                  Nouveau
+                </button>
+              </header>
+              <ul class="admin-service-list" id="adminServiceList"></ul>
+            </section>
+
+            <section class="admin-section">
+              <header class="panel__header">
+                <h3>Connaissances</h3>
+                <button class="button button--ghost" id="adminAddKnowledge" disabled>
+                  <i class="fa-solid fa-circle-plus"></i>
+                  Ajouter
+                </button>
+              </header>
+              <div class="panel__placeholder" id="adminKnowledgePlaceholder">
+                Sélectionnez un service pour gérer ses connaissances.
+              </div>
+              <ul class="admin-knowledge-list" id="adminKnowledgeList"></ul>
+            </section>
+          </aside>
+
+          <div class="admin-editor">
+            <div class="workspace__empty" id="adminEmptyState">
+              <i class="fa-solid fa-pen-to-square"></i>
+              <p>Sélectionnez une connaissance pour la modifier.</p>
+            </div>
+
+            <div class="workspace__content editor-panel" id="knowledgeEditor" hidden>
+              <header class="knowledge-header">
+                <div>
+                  <input
+                    type="text"
+                    id="knowledgeTitle"
+                    class="knowledge-header__title"
+                    placeholder="Titre de la connaissance"
+                  />
+                  <div class="knowledge-breadcrumb" id="knowledgeBreadcrumb"></div>
+                </div>
+                <div class="knowledge-actions">
+                  <button class="button button--ghost" id="deleteKnowledge">
+                    <i class="fa-solid fa-trash"></i>
+                    Supprimer
+                  </button>
+                  <button class="button button--primary" id="saveKnowledge">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    Enregistrer
+                  </button>
+                </div>
+              </header>
+
+              <div class="knowledge-body">
+                <section class="panel panel--sub">
+                  <h3>Définition</h3>
+                  <textarea
+                    id="knowledgeDefinition"
+                    placeholder="Décrivez la situation, les prérequis ou les informations importantes..."
+                  ></textarea>
+                </section>
+
+                <section class="panel panel--sub">
+                  <header class="panel__header">
+                    <div>
+                      <h3>Chemin de résolution</h3>
+                      <p class="panel__subtitle">
+                        Organisez les étapes clés et marquez les issues finales.
+                      </p>
+                    </div>
+                    <button class="button button--ghost" id="addRootStep">
+                      <i class="fa-solid fa-circle-plus"></i>
+                      Point de départ
+                    </button>
+                  </header>
+
+                  <div class="progress-card">
+                    <div class="progress-card__row">
+                      <span class="progress-card__title">Progression des chemins</span>
+                      <span class="progress-card__value" id="progressValue">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div class="progress-bar__fill" id="progressBar"></div>
+                    </div>
+                    <p class="progress-card__hint">
+                      Cochez <strong>Fin de chemin</strong> pour indiquer les réponses finales.
+                    </p>
+                  </div>
+
+                  <ul class="tree" id="stepTree"></ul>
+
+                  <div class="panel__footer" id="incompletePaths" hidden>
+                    <h4>Chemins à compléter</h4>
+                    <ul></ul>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <template id="treeNodeTemplate">
       <li class="tree-node" data-id="">
