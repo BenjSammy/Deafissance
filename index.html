@@ -238,8 +238,18 @@
 
   // ===== Storage helpers =====
   const storeKey = 'kb-navigator-data-v1';
-  async function saveToLocal(){ await idbKeyval.set(storeKey, state.data); }
-  async function loadFromLocal(){ return await idbKeyval.get(storeKey); }
+  function hasLocalStore(){ return typeof window !== 'undefined' && typeof window.idbKeyval !== 'undefined'; }
+
+  async function saveToLocal(){
+    if(!hasLocalStore()) return;
+    try{ await window.idbKeyval.set(storeKey, state.data); }
+    catch(e){ console.warn('Impossible de sauvegarder dans IndexedDB', e); }
+  }
+  async function loadFromLocal(){
+    if(!hasLocalStore()) return null;
+    try{ return await window.idbKeyval.get(storeKey); }
+    catch(e){ console.warn('Impossible de charger IndexedDB', e); return null; }
+  }
 
   async function tryLoadDataJson(){
     try{
@@ -532,7 +542,14 @@
     }; inp.click();
   };
 
-  document.getElementById('btn-reset').onclick=async()=>{ if(!confirm('Effacer les données locales ?')) return; await idbKeyval.del(storeKey); location.reload(); };
+  document.getElementById('btn-reset').onclick=async()=>{
+    if(!confirm('Effacer les données locales ?')) return;
+    if(hasLocalStore()){
+      try{ await window.idbKeyval.del(storeKey); }
+      catch(e){ console.warn('Impossible de purger IndexedDB', e); }
+    }
+    location.reload();
+  };
 
   document.getElementById('btnSaveLocal').onclick=()=>{ saveToLocal().then(()=>alert('Données sauvegardées dans le navigateur.')); };
 
