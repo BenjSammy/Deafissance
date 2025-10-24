@@ -165,6 +165,43 @@
                 </div>
               </div>
             </div>
+
+            <div class="workspace__content knowledge-viewer" id="knowledgeViewer" hidden>
+              <header class="knowledge-header">
+                <div>
+                  <h2 class="knowledge-header__title" id="viewerKnowledgeTitle"></h2>
+                  <div class="knowledge-breadcrumb" id="viewerBreadcrumb"></div>
+                </div>
+                <div class="knowledge-actions">
+                  <button class="button button--ghost" id="viewerBack">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Étape précédente
+                  </button>
+                  <button class="button button--primary" id="viewerReset">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    Recommencer
+                  </button>
+                </div>
+              </header>
+
+              <div class="knowledge-viewer__body">
+                <section class="panel panel--sub knowledge-viewer__definition">
+                  <h3>Définition</h3>
+                  <p id="viewerDefinition"></p>
+                </section>
+
+                <section class="panel panel--sub knowledge-viewer__path">
+                  <header class="panel__header">
+                    <div>
+                      <h3>Chemin actuel</h3>
+                      <p class="panel__subtitle" id="viewerStepTitle"></p>
+                    </div>
+                  </header>
+                  <div class="knowledge-viewer__status" id="viewerStatus"></div>
+                  <div class="knowledge-viewer__options" id="viewerOptions"></div>
+                </section>
+              </div>
+            </div>
           </section>
         </div>
       </div>
