@@ -58,6 +58,17 @@
     .hint{font-size:.85rem;color:#a8b7db}
     .hidden{display:none}
     .placeholder{padding:12px;border:1px dashed var(--border);border-radius:12px;color:var(--muted);background:#0e1831;text-align:center}
+    .landing{display:grid;gap:18px;width:100%;max-width:920px;margin:0 auto;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+    .landing-col{background:#0e1831;border:1px solid var(--border);border-radius:18px;padding:20px;box-shadow:0 18px 32px rgba(6,12,24,.45)}
+    .landing-col.disabled{opacity:.45;filter:saturate(.6)}
+    .landing-step{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+    .landing-step-badge{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;background:#162653;color:#d7e6ff;font-weight:600;font-size:1rem;box-shadow:0 0 0 1px rgba(110,168,254,.35)}
+    .landing-title{font-size:1.05rem;font-weight:700;margin-bottom:6px}
+    .landing-subtitle{color:#a8b7db;font-size:.92rem;margin-bottom:16px}
+    .landing-services{display:flex;flex-wrap:wrap;gap:10px}
+    .btn.huge{padding:12px 18px;font-size:1rem;border-radius:14px}
+    .btn.huge.active{border-color:var(--accent);background:#142247}
+    .landing-placeholder{padding:14px;border:1px dashed var(--border);border-radius:12px;color:var(--muted);text-align:center;background:#0c152a}
   </style>
 </head>
 <body>
@@ -320,11 +331,75 @@
     const currentService = state.data.services.find(s=>s.id===state.currentService);
     const kbTools = document.getElementById('kbTools');
     if(!kb){
-      document.getElementById('kbTitle').textContent = 'Choisis un service ➜ une connaissance';
-      document.getElementById('kbSubtitle').textContent = currentService ? `Service : ${currentService.name}` : 'Puis suis le parcours.';
-      document.getElementById('nodeView').classList.add('hidden');
-      document.getElementById('emptyView').classList.remove('hidden');
+      const emptyView = document.getElementById('emptyView');
+      const nodeView = document.getElementById('nodeView');
+      const serviceList = state.data.services;
+      const knowledgeForService = currentService ? state.data.knowledge.filter(k=>k.serviceId===currentService.id) : [];
+
+      document.getElementById('kbTitle').textContent = 'Navigateur de procédures';
+      document.getElementById('kbSubtitle').textContent = currentService ? `Service sélectionné : ${currentService.name}` : 'Commence par choisir un service.';
+      nodeView.classList.add('hidden');
+      emptyView.classList.remove('hidden');
+      emptyView.classList.remove('center');
       kbTools.classList.add('hidden');
+
+      const serviceButtons = serviceList.map(s=>`
+        <button class="btn huge ${state.currentService===s.id?'active':''}" data-service="${s.id}">${s.name}</button>
+      `).join('');
+
+      const knowledgeButtons = knowledgeForService.length
+        ? knowledgeForService.map(k=>`
+            <button class="btn huge ${state.currentKb===k.id?'active':''}" data-kb="${k.id}">${k.title}</button>
+          `).join('')
+        : `<div class="landing-placeholder">${currentService ? 'Aucune connaissance disponible pour ce service.' : 'Sélectionne un service pour voir ses connaissances.'}</div>`;
+
+      emptyView.innerHTML = `
+        <div class="landing">
+          <div class="landing-col ${serviceList.length?'':'disabled'}">
+            <div class="landing-step"><div class="landing-step-badge">1</div><div>
+              <div class="landing-title">Liste des services</div>
+              <div class="landing-subtitle">Choisis le service à explorer. Tu peux aussi cliquer directement sur les boutons ci-dessous.</div>
+            </div></div>
+            <div class="landing-services">${serviceButtons}</div>
+          </div>
+          <div class="landing-col ${currentService?'':'disabled'}">
+            <div class="landing-step"><div class="landing-step-badge">2</div><div>
+              <div class="landing-title">Étape : connaissances</div>
+              <div class="landing-subtitle">Pour le service sélectionné, ouvre la connaissance souhaitée.</div>
+            </div></div>
+            <div class="landing-services">${knowledgeButtons}</div>
+          </div>
+          <div class="landing-col ${state.currentKb?'':'disabled'}">
+            <div class="landing-step"><div class="landing-step-badge">3</div><div>
+              <div class="landing-title">Le chemin commence ici</div>
+              <div class="landing-subtitle">Une fois la connaissance ouverte, le parcours interactif s'affiche automatiquement.</div>
+            </div></div>
+            <div class="landing-placeholder">${state.currentKb? 'Prêt à suivre le parcours depuis le premier nœud.' : 'Sélectionne une connaissance pour afficher le parcours.'}</div>
+          </div>
+        </div>
+      `;
+
+      emptyView.querySelectorAll('[data-service]').forEach(btn=>{
+        btn.onclick = ()=>{
+          state.currentService = btn.getAttribute('data-service');
+          state.currentKb = null;
+          state.currentNode = null;
+          renderServices();
+          renderKbList();
+          renderMain();
+        };
+      });
+
+      emptyView.querySelectorAll('[data-kb]').forEach(btn=>{
+        btn.onclick = ()=>{
+          state.currentKb = btn.getAttribute('data-kb');
+          const kb = state.data.knowledge.find(k=>k.id===state.currentKb);
+          state.currentNode = kb?.start || null;
+          renderKbList();
+          renderMain();
+        };
+      });
+
       return;
     }
     document.getElementById('kbTitle').textContent = kb.title;
