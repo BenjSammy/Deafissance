@@ -58,17 +58,19 @@
     .hint{font-size:.85rem;color:#a8b7db}
     .hidden{display:none}
     .placeholder{padding:12px;border:1px dashed var(--border);border-radius:12px;color:var(--muted);background:#0e1831;text-align:center}
-    .landing{display:grid;gap:18px;width:100%;max-width:920px;margin:0 auto;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
-    .landing-col{background:#0e1831;border:1px solid var(--border);border-radius:18px;padding:20px;box-shadow:0 18px 32px rgba(6,12,24,.45)}
-    .landing-col.disabled{opacity:.45;filter:saturate(.6)}
-    .landing-step{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-    .landing-step-badge{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;background:#162653;color:#d7e6ff;font-weight:600;font-size:1rem;box-shadow:0 0 0 1px rgba(110,168,254,.35)}
-    .landing-title{font-size:1.05rem;font-weight:700;margin-bottom:6px}
-    .landing-subtitle{color:#a8b7db;font-size:.92rem;margin-bottom:16px}
-    .landing-services{display:flex;flex-wrap:wrap;gap:10px}
-    .btn.huge{padding:12px 18px;font-size:1rem;border-radius:14px}
-    .btn.huge.active{border-color:var(--accent);background:#142247}
-    .landing-placeholder{padding:14px;border:1px dashed var(--border);border-radius:12px;color:var(--muted);text-align:center;background:#0c152a}
+    .hero{padding:32px 12px 40px;max-width:1040px;margin:0 auto}
+    .hero-header{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+    .hero-title{font-size:2.2rem;font-weight:700}
+    .hero-subtitle{color:var(--muted);font-size:1.05rem;max-width:680px}
+    .hero-secondary{margin-top:16px;font-size:1rem;color:#a8b7db}
+    .card-grid{display:grid;gap:20px;width:100%;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:20px}
+    .card-tile{background:#0e1831;border:1px solid var(--border);border-radius:20px;padding:24px;box-shadow:0 18px 32px rgba(6,12,24,.45);cursor:pointer;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+    .card-tile:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 22px 36px rgba(13,22,38,.55)}
+    .card-tile.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(110,168,254,.35)}
+    .card-icon{width:52px;height:52px;border-radius:16px;background:#162653;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:14px}
+    .card-tile-title{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+    .card-tile-desc{color:#a8b7db;font-size:.95rem;line-height:1.4}
+    .card-tile-tag{display:inline-block;margin-top:12px;padding:4px 12px;border-radius:999px;background:#102046;color:#a8c4ff;font-size:.8rem}
   </style>
 </head>
 <body>
@@ -327,61 +329,44 @@
   }
 
   function renderMain(){
-    const kb = state.data.knowledge.find(k=>k.id===state.currentKb);
     const currentService = state.data.services.find(s=>s.id===state.currentService);
+    const kb = currentService ? state.data.knowledge.find(k=>k.id===state.currentKb && k.serviceId===currentService.id) : null;
     const kbTools = document.getElementById('kbTools');
-    if(!kb){
-      const emptyView = document.getElementById('emptyView');
-      const nodeView = document.getElementById('nodeView');
-      const serviceList = state.data.services;
-      const knowledgeForService = currentService ? state.data.knowledge.filter(k=>k.serviceId===currentService.id) : [];
+    const emptyView = document.getElementById('emptyView');
+    const nodeView = document.getElementById('nodeView');
 
+    if(!currentService){
       document.getElementById('kbTitle').textContent = 'Navigateur de procédures';
-      document.getElementById('kbSubtitle').textContent = currentService ? `Service sélectionné : ${currentService.name}` : 'Commence par choisir un service.';
+      document.getElementById('kbSubtitle').textContent = 'Choisis un service pour commencer.';
       nodeView.classList.add('hidden');
       emptyView.classList.remove('hidden');
       emptyView.classList.remove('center');
       kbTools.classList.add('hidden');
 
-      const serviceButtons = serviceList.map(s=>`
-        <button class="btn huge ${state.currentService===s.id?'active':''}" data-service="${s.id}">${s.name}</button>
-      `).join('');
-
-      const knowledgeButtons = knowledgeForService.length
-        ? knowledgeForService.map(k=>`
-            <button class="btn huge ${state.currentKb===k.id?'active':''}" data-kb="${k.id}">${k.title}</button>
-          `).join('')
-        : `<div class="landing-placeholder">${currentService ? 'Aucune connaissance disponible pour ce service.' : 'Sélectionne un service pour voir ses connaissances.'}</div>`;
+      const cards = state.data.services.map(s=>{
+        const initials = s.name.split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        return `
+          <div class="card-tile ${state.currentService===s.id?'active':''}" data-service="${s.id}">
+            <div class="card-icon">${initials||'📁'}</div>
+            <div class="card-tile-title">${s.name}</div>
+            <div class="card-tile-desc">Consulte les connaissances et parcours associés à ce service.</div>
+          </div>
+        `;
+      }).join('');
 
       emptyView.innerHTML = `
-        <div class="landing">
-          <div class="landing-col ${serviceList.length?'':'disabled'}">
-            <div class="landing-step"><div class="landing-step-badge">1</div><div>
-              <div class="landing-title">Liste des services</div>
-              <div class="landing-subtitle">Choisis le service à explorer. Tu peux aussi cliquer directement sur les boutons ci-dessous.</div>
-            </div></div>
-            <div class="landing-services">${serviceButtons}</div>
+        <div class="hero">
+          <div class="hero-header">
+            <div class="hero-title">Bonjour ! Quel service souhaites-tu explorer ?</div>
+            <div class="hero-subtitle">Affiche rapidement les grands parcours métiers en sélectionnant un service. Les cartes ci-dessous permettent un accès visuel à chaque univers.</div>
           </div>
-          <div class="landing-col ${currentService?'':'disabled'}">
-            <div class="landing-step"><div class="landing-step-badge">2</div><div>
-              <div class="landing-title">Étape : connaissances</div>
-              <div class="landing-subtitle">Pour le service sélectionné, ouvre la connaissance souhaitée.</div>
-            </div></div>
-            <div class="landing-services">${knowledgeButtons}</div>
-          </div>
-          <div class="landing-col ${state.currentKb?'':'disabled'}">
-            <div class="landing-step"><div class="landing-step-badge">3</div><div>
-              <div class="landing-title">Le chemin commence ici</div>
-              <div class="landing-subtitle">Une fois la connaissance ouverte, le parcours interactif s'affiche automatiquement.</div>
-            </div></div>
-            <div class="landing-placeholder">${state.currentKb? 'Prêt à suivre le parcours depuis le premier nœud.' : 'Sélectionne une connaissance pour afficher le parcours.'}</div>
-          </div>
+          <div class="card-grid">${cards}</div>
         </div>
       `;
 
-      emptyView.querySelectorAll('[data-service]').forEach(btn=>{
-        btn.onclick = ()=>{
-          state.currentService = btn.getAttribute('data-service');
+      emptyView.querySelectorAll('[data-service]').forEach(tile=>{
+        tile.onclick = ()=>{
+          state.currentService = tile.getAttribute('data-service');
           state.currentKb = null;
           state.currentNode = null;
           renderServices();
@@ -390,11 +375,45 @@
         };
       });
 
-      emptyView.querySelectorAll('[data-kb]').forEach(btn=>{
-        btn.onclick = ()=>{
-          state.currentKb = btn.getAttribute('data-kb');
-          const kb = state.data.knowledge.find(k=>k.id===state.currentKb);
-          state.currentNode = kb?.start || null;
+      return;
+    }
+
+    if(!kb){
+      document.getElementById('kbTitle').textContent = currentService.name;
+      document.getElementById('kbSubtitle').textContent = 'Sélectionne une connaissance pour démarrer le parcours.';
+      nodeView.classList.add('hidden');
+      emptyView.classList.remove('hidden');
+      emptyView.classList.remove('center');
+      kbTools.classList.add('hidden');
+
+      const knowledgeForService = state.data.knowledge.filter(k=>k.serviceId===currentService.id);
+      const cards = knowledgeForService.length
+        ? knowledgeForService.map((k,idx)=>`
+            <div class="card-tile ${state.currentKb===k.id?'active':''}" data-kb="${k.id}">
+              <div class="card-icon">📘</div>
+              <div class="card-tile-title">${k.title}</div>
+              <div class="card-tile-desc">Accède au cheminement détaillé étape par étape.</div>
+              <div class="card-tile-tag">Parcours ${idx+1}</div>
+            </div>
+          `).join('')
+        : `<div class="card-tile" style="cursor:default;opacity:.65">Aucune connaissance disponible pour ce service pour le moment.</div>`;
+
+      emptyView.innerHTML = `
+        <div class="hero">
+          <div class="hero-header">
+            <div class="hero-title">${currentService.name}</div>
+            <div class="hero-subtitle">Choisis une carte de connaissance pour afficher le chemin correspondant. Rien ne s'affiche tant qu'aucune connaissance n'est sélectionnée.</div>
+          </div>
+          <div class="card-grid">${cards}</div>
+          <div class="hero-secondary">Besoin d'un autre service ? Reviens en arrière via le menu latéral ou les cartes.</div>
+        </div>
+      `;
+
+      emptyView.querySelectorAll('[data-kb]').forEach(tile=>{
+        tile.onclick = ()=>{
+          state.currentKb = tile.getAttribute('data-kb');
+          const nextKb = state.data.knowledge.find(k=>k.id===state.currentKb);
+          state.currentNode = nextKb?.start || null;
           renderKbList();
           renderMain();
         };
@@ -406,7 +425,7 @@
     const svc = state.data.services.find(s=>s.id===kb.serviceId);
     document.getElementById('kbSubtitle').textContent = svc?svc.name:'';
     kbTools.classList.toggle('hidden',!state.admin);
-    document.getElementById('emptyView').classList.add('hidden');
+    emptyView.classList.add('hidden');
     document.getElementById('nodeView').classList.remove('hidden');
 
     // Node
