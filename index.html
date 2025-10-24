@@ -1,275 +1,556 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Base de connaissances - Deafissance</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-      integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPkG6Cw+p1GSo8H4jqwU1V0t8mq1jhtnY7B8MO5NL5Fz26P4gFZb2zKg=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <header class="topbar">
-      <div class="topbar__brand">
-        <div class="brand-logo">D</div>
-        <div class="brand-text">
-          <h1>Deafissance</h1>
-          <p>Base de connaissances métiers</p>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KB Navigator – Procédures</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/idb-keyval-iife.min.js"></script>
+  <script>
+    // --- Minimal Tailwind-ish utility styles without Tailwind to keep single-file ---
+  </script>
+  <style>
+    :root{--bg:#0b1220;--panel:#111a2b;--muted:#7f8cad;--text:#e6eefc;--accent:#6ea8fe;--ok:#1fbf75;--bad:#ff6b6b;--card:#0f1729;--border:#1e2943}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;background:linear-gradient(180deg,#0b1220,#0b1220 50%,#0d1323);color:var(--text)}
+    .app{display:grid;grid-template-columns:280px 1fr;gap:16px;min-height:100vh}
+    header{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border);background:rgba(15,23,41,.6);backdrop-filter:saturate(140%) blur(8px);position:sticky;top:0;z-index:10}
+    .logo{font-weight:700;letter-spacing:.2px}
+    .muted{color:var(--muted)}
+    .btn{background:#1a2642;color:#cfe1ff;border:1px solid var(--border);padding:8px 12px;border-radius:12px;cursor:pointer;transition:.15s}
+    .btn:hover{transform:translateY(-1px);border-color:#2a3b66}
+    .btn.small{padding:6px 10px;border-radius:10px;font-size:.9rem}
+    .btn.primary{background:linear-gradient(180deg,#1f3b79,#1c2f5c);border-color:#2c4e9e}
+    .btn.danger{background:#3a1e25;border-color:#6b2b39;color:#ffd7de}
+    .btn.ghost{background:transparent}
+    .btn.block{display:block;width:100%}
+    .sidebar{border-right:1px solid var(--border);padding:16px 12px;background:#0b1220}
+    .section{margin-bottom:18px}
+    .title{font-weight:700;margin:8px 0 10px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px}
+    .list{display:flex;flex-direction:column;gap:8px}
+    .item{display:flex;align-items:center;justify-content:space-between;background:#0e1831;border:1px solid var(--border);border-radius:12px;padding:10px 12px;cursor:pointer}
+    .item:hover{border-color:#36518a}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .content{padding:16px}
+    .box{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:16px}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);background:#0d1833;color:#cfe1ff;font-size:.82rem}
+    .kbd{background:#0c162e;border:1px solid #293861;border-radius:6px;padding:2px 6px}
+    .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+    input[type="text"],textarea,select,input[type="password"]{background:#0f1a33;border:1px solid var(--border);border-radius:12px;color:var(--text);padding:10px 12px}
+    textarea{min-height:120px}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+    .option{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+    .divider{height:1px;background:var(--border);margin:12px 0}
+    .tag{font-size:.8rem;color:#b4c6ff}
+    .success{color:var(--ok)}
+    .danger{color:var(--bad)}
+    .center{display:flex;align-items:center;justify-content:center}
+    .end-badge{background:#11281e;border:1px solid #255a3e;color:#caffdf}
+    .scorebar{height:10px;background:#13213e;border-radius:8px;overflow:hidden}
+    .scorebar>div{height:100%;background:linear-gradient(90deg,#23d48c,#6ea8fe)}
+    .hl{color:#a3c5ff}
+    .footer{padding:12px;color:#8ea4ce;font-size:.9rem}
+    .hint{font-size:.85rem;color:#a8b7db}
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">📚 KB Navigator <span class="muted">– Procédures</span></div>
+    <div class="toolbar">
+      <button class="btn small" id="btn-import">Importer JSON</button>
+      <button class="btn small" id="btn-export">Exporter JSON</button>
+      <button class="btn small" id="btn-reset">Réinitialiser navigateur</button>
+      <button class="btn primary" id="btn-admin">🔐 Admin</button>
+    </div>
+  </header>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div class="section">
+        <div class="title">Services</div>
+        <div id="serviceList" class="list"></div>
+        <div id="btnAddServiceWrap" class="hidden" style="margin-top:8px">
+          <button class="btn block" id="btnAddService">+ Nouveau service</button>
         </div>
       </div>
-      <div class="topbar__actions">
-        <button class="button button--ghost" id="adminToggle" title="Mode administration">
-          <i class="fa-solid fa-user-gear"></i>
-          <span>Admin</span>
-        </button>
+      <div class="section">
+        <div class="title">Connaissances</div>
+        <div id="kbList" class="list"></div>
+        <div id="btnAddKbWrap" class="hidden" style="margin-top:8px">
+          <button class="btn block" id="btnAddKb">+ Nouvelle connaissance</button>
+        </div>
       </div>
-    </header>
+      <div class="section">
+        <div class="title">Couverture des parcours</div>
+        <div class="card">
+          <div class="scorebar"><div id="coverageBar" style="width:0%"></div></div>
+          <div style="margin-top:8px"><b id="coverageLabel">0%</b> des chemins atteignent une fin ✅</div>
+          <div class="hint" id="coverageHint"></div>
+        </div>
+      </div>
+    </aside>
 
-    <main class="workspace">
-      <section class="panel services-panel">
-        <header class="panel__header">
+    <main class="content">
+      <div class="box" id="viewerBox">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
           <div>
-            <h2>Services</h2>
-            <p class="panel__subtitle">
-              Sélectionnez un service pour accéder aux fiches connaissances associées.
-            </p>
+            <div class="title" id="kbTitle">Choisis un service ➜ une connaissance</div>
+            <div class="muted" id="kbSubtitle">Puis suis le parcours.</div>
           </div>
-          <button class="button button--primary" id="addService">
-            <i class="fa-solid fa-circle-plus"></i>
-            Nouveau service
-          </button>
-        </header>
-        <div class="service-grid" id="serviceGrid"></div>
-      </section>
+          <div class="toolbar hidden" id="kbTools">
+            <button class="btn small" id="btnEditKb">Modifier</button>
+            <button class="btn small danger" id="btnDeleteKb">Supprimer</button>
+          </div>
+        </div>
+        <div class="divider"></div>
 
-      <div class="workspace__columns">
-        <div class="column column--narrow">
-          <section class="panel panel--list">
-            <header class="panel__header">
-              <div>
-                <h2>Connaissances</h2>
-                <p class="panel__subtitle">
-                  Parcourez les fiches disponibles pour le service sélectionné.
-                </p>
-              </div>
-            </header>
-            <div class="panel__body">
-              <div class="panel__placeholder" id="knowledgePlaceholder">
-                Choisissez un service pour afficher ses connaissances.
-              </div>
-              <ul class="simple-list" id="knowledgeList"></ul>
-            </div>
-          </section>
+        <div id="nodeView" class="hidden">
+          <div id="nodeDesc" class="muted" style="line-height:1.6"></div>
+          <div class="divider"></div>
+          <div class="grid" id="optionsGrid"></div>
+          <div class="divider"></div>
+          <div class="toolbar">
+            <button class="btn small" id="btnRestart">⟲ Recommencer</button>
+            <button class="btn small" id="btnEditNode">✏️ Éditer ce nœud</button>
+          </div>
         </div>
 
-        <div class="column column--wide">
-          <section class="panel viewer-panel">
-            <div class="workspace__empty" id="emptyState">
-              <i class="fa-solid fa-lightbulb"></i>
-              <p>Sélectionnez une connaissance pour afficher son parcours.</p>
-            </div>
-
-            <div class="workspace__content knowledge-viewer" id="knowledgeViewer" hidden>
-              <header class="knowledge-header">
-                <div>
-                  <h2 class="knowledge-header__title" id="viewerKnowledgeTitle"></h2>
-                  <div class="knowledge-breadcrumb" id="viewerBreadcrumb"></div>
-                </div>
-                <div class="knowledge-actions">
-                  <button class="button button--ghost" id="viewerBack">
-                    <i class="fa-solid fa-arrow-left"></i>
-                    Étape précédente
-                  </button>
-                  <button class="button button--primary" id="viewerReset">
-                    <i class="fa-solid fa-arrows-rotate"></i>
-                    Recommencer
-                  </button>
-                </div>
-              </header>
-
-              <div class="knowledge-viewer__body">
-                <section class="panel panel--sub knowledge-viewer__definition">
-                  <h3>Définition</h3>
-                  <p id="viewerDefinition"></p>
-                </section>
-
-                <section class="panel panel--sub knowledge-viewer__path">
-                  <header class="panel__header">
-                    <div>
-                      <h3>Chemin actuel</h3>
-                      <p class="panel__subtitle" id="viewerStepTitle"></p>
-                    </div>
-                  </header>
-                  <div class="knowledge-viewer__status" id="viewerStatus"></div>
-                  <div class="knowledge-viewer__options" id="viewerOptions"></div>
-                </section>
-              </div>
-            </div>
-          </section>
+        <div id="emptyView" class="center" style="min-height:200px">
+          <div class="muted">Aucune connaissance chargée.</div>
         </div>
       </div>
+
+      <div class="box hidden" id="adminBox">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div class="title">Espace Admin</div>
+          <div class="toolbar">
+            <button class="btn small" id="btnCloseAdmin">Fermer</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+
+        <div class="grid">
+          <div class="card">
+            <div class="title">Service</div>
+            <div class="field"><label>Nom</label><input id="svcName" type="text" placeholder="Ex. Réclamation"></div>
+            <div class="toolbar">
+              <button class="btn small" id="svcSave">Enregistrer / Mettre à jour</button>
+              <button class="btn small danger" id="svcDelete">Supprimer</button>
+            </div>
+            <div class="hint">Sélectionne un service à gauche pour le modifier, ou saisis un nom pour créer.</div>
+          </div>
+          <div class="card">
+            <div class="title">Connaissance</div>
+            <div class="field"><label>Titre</label><input id="kbName" type="text" placeholder="Ex. Objet endommagé"></div>
+            <div class="field"><label>Service parent</label><select id="kbService"></select></div>
+            <div class="field"><label>ID du nœud de départ</label><input id="kbStart" type="text" placeholder="Ex. n1"></div>
+            <div class="toolbar">
+              <button class="btn small" id="kbSave">Enregistrer / MAJ</button>
+              <button class="btn small danger" id="kbRemove">Supprimer</button>
+            </div>
+            <div class="hint">Crée la connaissance, puis ajoute ses nœuds ci-dessous.</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div class="title">Nœud de parcours</div>
+            <div class="toolbar"><button class="btn small" id="nodeNew">+ Nouveau nœud</button></div>
+          </div>
+          <div class="grid">
+            <div>
+              <div class="field"><label>ID (unique)</label><input id="nodeId" type="text" placeholder="Ex. n1"></div>
+              <div class="field"><label>Description (Markdown autorisé)</label><textarea id="nodeDescEdit" placeholder="Ex. Le client nous informe que..."></textarea></div>
+              <div class="field"><label><input id="nodeEnd" type="checkbox"/> C'est une fin de parcours</label></div>
+            </div>
+            <div>
+              <div class="title" style="margin-top:0">Options</div>
+              <div id="optList"></div>
+              <button class="btn small" id="optAdd">+ Ajouter une option</button>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="toolbar">
+            <button class="btn small" id="nodeSave">Enregistrer / MAJ nœud</button>
+            <button class="btn small danger" id="nodeDelete">Supprimer nœud</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <div class="title">Données & déploiement</div>
+          <div class="hint">Les données sont sauvegardées dans le navigateur et exportables en JSON. Pour GitHub Pages : place <span class="kbd">index.html</span> (ce fichier) et un <span class="kbd">data.json</span> exporté dans le même dossier. L'appli chargera automatiquement <span class="kbd">data.json</span> s'il existe.</div>
+          <div class="toolbar" style="margin-top:8px">
+            <button class="btn small" id="btnSaveLocal">💾 Sauver dans le navigateur</button>
+            <button class="btn small" id="btnExportAdmin">⬇️ Exporter data.json</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">Astuce : appuie sur <span class="kbd">/</span> pour rechercher un service/connaissance. Mot de passe admin par défaut : <span class="kbd">1111</span> (modifiable dans le code).</div>
     </main>
+  </div>
 
-    <div class="admin-overlay" id="adminOverlay" hidden>
-      <div class="admin-overlay__backdrop" id="adminBackdrop"></div>
-      <div class="admin-overlay__panel">
-        <header class="admin-overlay__header">
-          <div>
-            <h2>Administration</h2>
-            <p>Gérez les services et organisez les connaissances.</p>
-          </div>
-          <button class="button button--ghost" id="closeAdmin">
-            <i class="fa-solid fa-xmark"></i>
-            Fermer
-          </button>
-        </header>
-        <div class="admin-overlay__body">
-          <aside class="admin-sidebar">
-            <section class="admin-section">
-              <header class="panel__header">
-                <h3>Services</h3>
-                <button class="button button--ghost" id="adminAddService">
-                  <i class="fa-solid fa-circle-plus"></i>
-                  Nouveau
-                </button>
-              </header>
-              <ul class="admin-service-list" id="adminServiceList"></ul>
-            </section>
+  <script>
+  // ===== Core data model =====
+  const blankData = {
+    services: [
+      { id: 'reclamation', name: 'Réclamation' },
+      { id: 'info', name: 'Information' },
+      { id: 'demande', name: 'Demandes client' }
+    ],
+    knowledge: [
+      {
+        id: 'obj-endommage',
+        title: 'GP FO TEL | Objet endommagé',
+        serviceId: 'reclamation',
+        start: 'n1',
+        nodes: [
+          { id: 'n1', end:false, desc: 'Le client nous informe que son colis a été **endommagé** au cours de l\'acheminement ou lors de la livraison.\n\nChoisis le périmètre.',
+            options:[
+              { label: '📦 Expéditeur', type:'next', to:'n2' },
+              { label: '📫 Destinataire', type:'next', to:'n5' }
+            ] },
+          { id: 'n2', end:false, desc: 'Expéditeur ➜ Situation du client', options:[
+              { label:'❌ Absence de flashage / réfaction', type:'next', to:'n3' },
+              { label:'✅ Présence d\'un flashage', type:'next', to:'n4' }
+            ] },
+          { id: 'n3', end:true, desc: 'Aucune preuve système. ➜ **Service client** : informer des pièces à fournir et ouvrir un dossier.', options:[] },
+          { id: 'n4', end:true, desc: 'Preuve détectée. ➜ **Indemnisation** selon conditions.', options:[] },
+          { id: 'n5', end:true, desc: 'Destinataire : invite à contacter l\'expéditeur pour prise en charge. (Fin)', options:[] }
+        ]
+      }
+    ]
+  };
 
-            <section class="admin-section">
-              <header class="panel__header">
-                <h3>Connaissances</h3>
-                <button class="button button--ghost" id="adminAddKnowledge" disabled>
-                  <i class="fa-solid fa-circle-plus"></i>
-                  Ajouter
-                </button>
-              </header>
-              <div class="panel__placeholder" id="adminKnowledgePlaceholder">
-                Sélectionnez un service pour gérer ses connaissances.
-              </div>
-              <ul class="admin-knowledge-list" id="adminKnowledgeList"></ul>
-            </section>
-          </aside>
+  const state = {
+    data: null,
+    admin: false,
+    currentService: null,
+    currentKb: null,
+    currentNode: null,
+    adminPass: '1111'
+  };
 
-          <div class="admin-editor">
-            <div class="workspace__empty" id="adminEmptyState">
-              <i class="fa-solid fa-pen-to-square"></i>
-              <p>Sélectionnez une connaissance pour la modifier.</p>
-            </div>
+  // ===== Storage helpers =====
+  const storeKey = 'kb-navigator-data-v1';
+  async function saveToLocal(){ await idbKeyval.set(storeKey, state.data); }
+  async function loadFromLocal(){ return await idbKeyval.get(storeKey); }
 
-            <div class="workspace__content editor-panel" id="knowledgeEditor" hidden>
-              <header class="knowledge-header">
-                <div>
-                  <input
-                    type="text"
-                    id="knowledgeTitle"
-                    class="knowledge-header__title"
-                    placeholder="Titre de la connaissance"
-                  />
-                  <div class="knowledge-breadcrumb" id="knowledgeBreadcrumb"></div>
-                </div>
-                <div class="knowledge-actions">
-                  <button class="button button--ghost" id="deleteKnowledge">
-                    <i class="fa-solid fa-trash"></i>
-                    Supprimer
-                  </button>
-                  <button class="button button--primary" id="saveKnowledge">
-                    <i class="fa-solid fa-floppy-disk"></i>
-                    Enregistrer
-                  </button>
-                </div>
-              </header>
+  async function tryLoadDataJson(){
+    try{
+      const res = await fetch('data.json',{cache:'no-store'});
+      if(res.ok){ const j = await res.json(); return j; }
+    }catch(e){/* ignore */}
+    return null;
+  }
 
-              <div class="knowledge-body">
-                <section class="panel panel--sub">
-                  <h3>Définition</h3>
-                  <textarea
-                    id="knowledgeDefinition"
-                    placeholder="Décrivez la situation, les prérequis ou les informations importantes..."
-                  ></textarea>
-                </section>
+  // ===== Initialization =====
+  (async function init(){
+    let data = await loadFromLocal();
+    if(!data){ data = await tryLoadDataJson(); }
+    state.data = data || structuredClone(blankData);
+    renderAll();
+  })();
 
-                <section class="panel panel--sub">
-                  <header class="panel__header">
-                    <div>
-                      <h3>Chemin de résolution</h3>
-                      <p class="panel__subtitle">
-                        Organisez les étapes clés et marquez les issues finales.
-                      </p>
-                    </div>
-                    <button class="button button--ghost" id="addRootStep">
-                      <i class="fa-solid fa-circle-plus"></i>
-                      Point de départ
-                    </button>
-                  </header>
+  // ===== Rendering =====
+  function renderAll(){ renderServices(); renderKbList(); refreshCoverage(); renderMain(); toggleAdmin(false,true); }
 
-                  <div class="progress-card">
-                    <div class="progress-card__row">
-                      <span class="progress-card__title">Progression des chemins</span>
-                      <span class="progress-card__value" id="progressValue">0%</span>
-                    </div>
-                    <div class="progress-bar">
-                      <div class="progress-bar__fill" id="progressBar"></div>
-                    </div>
-                    <p class="progress-card__hint">
-                      Cochez <strong>Fin de chemin</strong> pour indiquer les réponses finales.
-                    </p>
-                  </div>
+  function renderServices(){
+    const wrap = document.getElementById('serviceList');
+    wrap.innerHTML='';
+    state.data.services.forEach(s=>{
+      const el = document.createElement('div'); el.className='item';
+      el.innerHTML = `<div>${s.name}</div><div class="muted">›</div>`;
+      el.onclick = ()=>{ state.currentService = s.id; state.currentKb=null; state.currentNode=null; renderKbList(); renderMain(); };
+      wrap.appendChild(el);
+    });
+    document.getElementById('btnAddServiceWrap').classList.toggle('hidden',!state.admin);
+  }
 
-                  <ul class="tree" id="stepTree"></ul>
+  function renderKbList(){
+    const wrap = document.getElementById('kbList'); wrap.innerHTML='';
+    const list = state.data.knowledge.filter(k=>!state.currentService || k.serviceId===state.currentService);
+    list.forEach(k=>{
+      const el = document.createElement('div'); el.className='item';
+      const svc = state.data.services.find(s=>s.id===k.serviceId);
+      el.innerHTML = `<div><b>${k.title}</b><div class="tag">${svc?svc.name:''}</div></div><div class="muted">›</div>`;
+      el.onclick = ()=>{ state.currentKb = k.id; state.currentNode = k.start; renderMain(); };
+      wrap.appendChild(el);
+    });
+    document.getElementById('btnAddKbWrap').classList.toggle('hidden',!state.admin);
+  }
 
-                  <div class="panel__footer" id="incompletePaths" hidden>
-                    <h4>Chemins à compléter</h4>
-                    <ul></ul>
-                  </div>
-                </section>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  function renderMain(){
+    const kb = state.data.knowledge.find(k=>k.id===state.currentKb);
+    const kbTools = document.getElementById('kbTools');
+    if(!kb){
+      document.getElementById('kbTitle').textContent = 'Choisis un service ➜ une connaissance';
+      document.getElementById('kbSubtitle').textContent = 'Puis suis le parcours.';
+      document.getElementById('nodeView').classList.add('hidden');
+      document.getElementById('emptyView').classList.remove('hidden');
+      kbTools.classList.add('hidden');
+      return;
+    }
+    document.getElementById('kbTitle').textContent = kb.title;
+    const svc = state.data.services.find(s=>s.id===kb.serviceId);
+    document.getElementById('kbSubtitle').textContent = svc?svc.name:'';
+    kbTools.classList.toggle('hidden',!state.admin);
+    document.getElementById('emptyView').classList.add('hidden');
+    document.getElementById('nodeView').classList.remove('hidden');
 
-    <template id="treeNodeTemplate">
-      <li class="tree-node" data-id="">
-        <div class="tree-node__content">
-          <button class="tree-node__toggle" title="Replier / Déplier">
-            <i class="fa-solid fa-angle-down"></i>
-          </button>
-          <div class="tree-node__text" contenteditable="false"></div>
-          <div class="tree-node__actions">
-            <label class="checkbox">
-              <input type="checkbox" class="tree-node__final" />
-              <span>Fin de chemin</span>
-            </label>
-            <button class="icon-button" data-action="add" title="Ajouter un embranchement">
-              <i class="fa-solid fa-plus"></i>
-            </button>
-            <button class="icon-button" data-action="delete" title="Supprimer">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
-        </div>
-        <ul class="tree-node__children"></ul>
-      </li>
-    </template>
+    // Node
+    const node = kb.nodes.find(n=>n.id===state.currentNode) || kb.nodes[0];
+    state.currentNode = node?.id;
+    const md = node ? node.desc : 'Aucun nœud.';
+    document.getElementById('nodeDesc').innerHTML = marked.parse(md);
 
-    <div class="toast" id="toast" hidden>
-      <i class="fa-solid fa-circle-check"></i>
-      <span></span>
-    </div>
+    const grid = document.getElementById('optionsGrid'); grid.innerHTML='';
+    if(node){
+      if(node.end){
+        const fin = document.createElement('div'); fin.className='card'; fin.innerHTML = '<div class="pill end-badge">Fin de parcours</div><div class="muted" style="margin-top:8px">Tu peux recommencer ou choisir une autre connaissance.</div>';
+        grid.appendChild(fin);
+      }
+      node.options?.forEach((o,idx)=>{
+        const btn = document.createElement('button'); btn.className='btn block';
+        btn.innerHTML = `${o.label}`;
+        btn.onclick = ()=>handleOption(kb,node,o);
+        grid.appendChild(btn);
+      });
+      if(!node.end && (!node.options || node.options.length===0)){
+        const warn = document.createElement('div'); warn.className='muted'; warn.textContent='⚠️ Aucun choix configuré pour ce nœud.'; grid.appendChild(warn);
+      }
+    }
+  }
 
-    <script src="app.js"></script>
-  </body>
+  function handleOption(kb,node,opt){
+    switch(opt.type){
+      case 'next':
+        state.currentNode = opt.to; renderMain(); break;
+      case 'link':
+        window.open(opt.url,'_blank'); break;
+      case 'redirect':
+        if(opt.kbId){ state.currentKb = opt.kbId; const kb2 = state.data.knowledge.find(k=>k.id===opt.kbId); state.currentNode = opt.to || kb2?.start; }
+        else { state.currentNode = opt.to; }
+        renderMain(); break;
+    }
+  }
+
+  // ===== Coverage =====
+  function refreshCoverage(){
+    const k = state.data.knowledge;
+    let ok=0, total=0; let hints=[];
+    k.forEach(kb=>{
+      // Traverse graph, count terminal coverage
+      const visited = new Set();
+      function dfs(nodeId, depth=0){
+        if(depth>200){ hints.push(`Boucle potentielle dans « ${kb.title} »`); return; }
+        const n = kb.nodes.find(x=>x.id===nodeId); if(!n){ hints.push(`Nœud manquant ${nodeId} dans « ${kb.title} »`); return; }
+        visited.add(nodeId);
+        if(n.end || !n.options || n.options.length===0){ ok++; total++; return; }
+        let hasProgress=false;
+        for(const o of n.options){
+          if(o.type==='link'){ ok++; total++; hasProgress=true; }
+          if(o.type==='next' && o.to){ total++; dfs(o.to, depth+1); hasProgress=true; }
+          if(o.type==='redirect'){ total++; dfs(o.to || kb.start, depth+1); hasProgress=true; }
+        }
+        if(!hasProgress){ total++; }
+      }
+      dfs(kb.start);
+      // Warn for unreachable nodes
+      kb.nodes.forEach(n=>{ if(!visited.has(n.id)) hints.push(`Nœud non atteint « ${n.id} » dans « ${kb.title} »`); });
+    });
+    const pct = total? Math.round((ok/total)*100):0;
+    document.getElementById('coverageBar').style.width=pct+'%';
+    document.getElementById('coverageLabel').textContent=pct+'%';
+    document.getElementById('coverageHint').textContent = hints.join(' • ');
+  }
+
+  // ===== Admin gating =====
+  function toggleAdmin(force, initial){
+    if(typeof force==='boolean') state.admin = force; // else toggle
+    document.getElementById('adminBox').classList.toggle('hidden', !state.admin);
+    document.getElementById('btnAddServiceWrap').classList.toggle('hidden', !state.admin);
+    document.getElementById('btnAddKbWrap').classList.toggle('hidden', !state.admin);
+    document.getElementById('kbTools').classList.toggle('hidden', !state.admin);
+    if(!initial) renderServices();
+  }
+
+  document.getElementById('btn-admin').onclick = ()=>{
+    if(state.admin){ toggleAdmin(false); return; }
+    const pass = prompt('Mot de passe admin');
+    if(pass===state.adminPass){ toggleAdmin(true); }
+    else alert('Accès refusé');
+  }
+  document.getElementById('btnCloseAdmin').onclick=()=>toggleAdmin(false);
+
+  // ===== CRUD Service =====
+  const svcName = document.getElementById('svcName');
+  document.getElementById('btnAddService').onclick=()=>{ svcName.value=''; svcName.focus(); };
+  document.getElementById('svcSave').onclick=()=>{
+    const name = svcName.value.trim(); if(!name) return alert('Nom requis');
+    // upsert by slug
+    const id = slug(name);
+    const ex = state.data.services.find(s=>s.id===id);
+    if(ex){ ex.name = name; }
+    else { state.data.services.push({id,name}); }
+    saveToLocal(); renderServices(); renderKbServiceSelect(); alert('Service enregistré.');
+  };
+  document.getElementById('svcDelete').onclick=()=>{
+    const name = svcName.value.trim(); if(!name) return alert('Saisis le nom du service à supprimer.');
+    const id = slug(name);
+    state.data.services = state.data.services.filter(s=>s.id!==id);
+    state.data.knowledge = state.data.knowledge.filter(k=>k.serviceId!==id);
+    saveToLocal(); renderAll(); alert('Service supprimé.');
+  };
+
+  // ===== CRUD Knowledge =====
+  const kbNameEl=document.getElementById('kbName');
+  const kbStartEl=document.getElementById('kbStart');
+  const kbSvcEl=document.getElementById('kbService');
+  function renderKbServiceSelect(){
+    kbSvcEl.innerHTML='';
+    state.data.services.forEach(s=>{
+      const o=document.createElement('option'); o.value=s.id; o.textContent=s.name; kbSvcEl.appendChild(o);
+    });
+  }
+  renderKbServiceSelect();
+
+  document.getElementById('btnAddKb').onclick=()=>{ kbNameEl.value=''; kbStartEl.value='n1'; kbSvcEl.value=state.currentService||state.data.services[0]?.id; };
+
+  document.getElementById('kbSave').onclick=()=>{
+    const title = kbNameEl.value.trim(); if(!title) return alert('Titre requis');
+    const id = slug(title);
+    const serviceId = kbSvcEl.value; const start = (kbStartEl.value||'n1').trim();
+    const ex = state.data.knowledge.find(k=>k.id===id);
+    if(ex){ ex.title=title; ex.serviceId=serviceId; ex.start=start; }
+    else { state.data.knowledge.push({id,title,serviceId,start,nodes:[]}); }
+    saveToLocal(); renderKbList(); refreshCoverage(); alert('Connaissance enregistrée.');
+  };
+  document.getElementById('kbRemove').onclick=()=>{
+    const title = kbNameEl.value.trim(); if(!title) return alert('Titre requis');
+    const id = slug(title);
+    state.data.knowledge = state.data.knowledge.filter(k=>k.id!==id);
+    saveToLocal(); renderKbList(); refreshCoverage(); alert('Connaissance supprimée.');
+  };
+
+  // Edit current KB from viewer toolbar
+  document.getElementById('btnEditKb').onclick=()=>{
+    const kb = state.data.knowledge.find(k=>k.id===state.currentKb); if(!kb) return;
+    kbNameEl.value = kb.title; kbSvcEl.value = kb.serviceId; kbStartEl.value = kb.start; toggleAdmin(true);
+  };
+  document.getElementById('btnDeleteKb').onclick=()=>{
+    if(!confirm('Supprimer cette connaissance ?')) return;
+    state.data.knowledge = state.data.knowledge.filter(k=>k.id!==state.currentKb);
+    state.currentKb=null; state.currentNode=null; saveToLocal(); renderAll();
+  };
+
+  // ===== Node editor =====
+  const nodeIdEl=document.getElementById('nodeId');
+  const nodeDescEditEl=document.getElementById('nodeDescEdit');
+  const nodeEndEl=document.getElementById('nodeEnd');
+  const optList=document.getElementById('optList');
+  function clearNodeForm(){ nodeIdEl.value=''; nodeDescEditEl.value=''; nodeEndEl.checked=false; optList.innerHTML=''; }
+
+  document.getElementById('nodeNew').onclick=()=>{ clearNodeForm(); nodeIdEl.focus(); };
+
+  function renderNodeToForm(id){
+    const kb = state.data.knowledge.find(k=>k.id===state.currentKb) || state.data.knowledge[0];
+    const n = kb?.nodes.find(x=>x.id===id);
+    if(!n){ clearNodeForm(); if(id) nodeIdEl.value=id; return; }
+    nodeIdEl.value=n.id; nodeDescEditEl.value=n.desc; nodeEndEl.checked=n.end===true; optList.innerHTML='';
+    (n.options||[]).forEach(addOptRowFromData);
+  }
+
+  function addOptRowFromData(o){
+    const row = document.createElement('div'); row.className='option';
+    row.innerHTML = `
+      <input class="opt-label" type="text" placeholder="Intitulé du bouton" value="${escapeHtml(o.label||'')}">
+      <select class="opt-type">
+        <option value="next" ${o.type==='next'?'selected':''}>Suivant →</option>
+        <option value="link" ${o.type==='link'?'selected':''}>Lien 🔗</option>
+        <option value="redirect" ${o.type==='redirect'?'selected':''}>Réorientation ↗</option>
+      </select>
+      <input class="opt-to" type="text" placeholder="ID cible (ou vide)" value="${escapeHtml(o.to||'')}">
+      <input class="opt-url" type="text" placeholder="URL si lien" value="${escapeHtml(o.url||'')}">
+      <input class="opt-kb" type="text" placeholder="ID connaissance si réorientation" value="${escapeHtml(o.kbId||'')}">
+      <button class="btn small danger opt-del">✕</button>
+    `;
+    row.querySelector('.opt-del').onclick=()=>row.remove();
+    optList.appendChild(row);
+  }
+
+  document.getElementById('optAdd').onclick=()=>addOptRowFromData({label:'Choix',type:'next',to:''});
+
+  document.getElementById('nodeSave').onclick=()=>{
+    const kb = state.data.knowledge.find(k=>k.id===state.currentKb) || state.data.knowledge[0];
+    if(!kb) return alert('Crée d\'abord une connaissance.');
+    const id = (nodeIdEl.value||'').trim(); if(!id) return alert('ID requis');
+    const desc = nodeDescEditEl.value; const end = nodeEndEl.checked;
+    const options=[]; [...optList.children].forEach(row=>{
+      const label=row.querySelector('.opt-label').value.trim(); if(!label) return;
+      const type=row.querySelector('.opt-type').value;
+      const to=row.querySelector('.opt-to').value.trim();
+      const url=row.querySelector('.opt-url').value.trim();
+      const kbId=row.querySelector('.opt-kb').value.trim();
+      const o={label,type}; if(to) o.to=to; if(url) o.url=url; if(kbId) o.kbId=kbId; options.push(o);
+    });
+    const ex = kb.nodes.find(n=>n.id===id);
+    if(ex){ ex.desc=desc; ex.end=end; ex.options=options; }
+    else { kb.nodes.push({id,desc,end,options}); }
+    saveToLocal(); refreshCoverage(); alert('Nœud enregistré.');
+    renderMain();
+  };
+
+  document.getElementById('nodeDelete').onclick=()=>{
+    const kb = state.data.knowledge.find(k=>k.id===state.currentKb) || state.data.knowledge[0];
+    if(!kb) return; const id=(nodeIdEl.value||'').trim(); if(!id) return;
+    kb.nodes = kb.nodes.filter(n=>n.id!==id);
+    saveToLocal(); refreshCoverage(); alert('Nœud supprimé.');
+    clearNodeForm(); renderMain();
+  };
+
+  // Edit current node from viewer
+  document.getElementById('btnEditNode').onclick=()=>{ toggleAdmin(true); renderNodeToForm(state.currentNode); };
+  document.getElementById('btnRestart').onclick=()=>{ const kb = state.data.knowledge.find(k=>k.id===state.currentKb); if(kb){ state.currentNode = kb.start; renderMain(); } };
+
+  // ===== Import / Export =====
+  function download(filename, data){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type:'application/json'})); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
+
+  document.getElementById('btn-export').onclick=()=>{ download('data.json', JSON.stringify(state.data,null,2)); };
+  document.getElementById('btnExportAdmin').onclick=()=>{ download('data.json', JSON.stringify(state.data,null,2)); };
+
+  document.getElementById('btn-import').onclick=()=>{
+    const inp=document.createElement('input'); inp.type='file'; inp.accept='application/json'; inp.onchange=async()=>{
+      const file=inp.files[0]; if(!file) return; const txt=await file.text();
+      try{ state.data = JSON.parse(txt); await saveToLocal(); renderAll(); alert('Import OK'); }
+      catch(e){ alert('JSON invalide'); }
+    }; inp.click();
+  };
+
+  document.getElementById('btn-reset').onclick=async()=>{ if(!confirm('Effacer les données locales ?')) return; await idbKeyval.del(storeKey); location.reload(); };
+
+  document.getElementById('btnSaveLocal').onclick=()=>{ saveToLocal().then(()=>alert('Données sauvegardées dans le navigateur.')); };
+
+  // ===== Utils =====
+  function slug(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+  function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // Keyboard quick search
+  window.addEventListener('keydown',e=>{ if(e.key==='/'){ e.preventDefault(); quickSearch(); } });
+  function quickSearch(){
+    const q = prompt('Recherche service/connaissance'); if(!q) return;
+    const svc = state.data.services.find(s=>s.name.toLowerCase().includes(q.toLowerCase()));
+    const kb = state.data.knowledge.find(k=>k.title.toLowerCase().includes(q.toLowerCase()));
+    if(kb){ state.currentKb = kb.id; state.currentNode = kb.start; renderMain(); return; }
+    if(svc){ state.currentService = svc.id; renderKbList(); return; }
+    alert('Aucun résultat');
+  }
+
+  </script>
+</body>
 </html>
